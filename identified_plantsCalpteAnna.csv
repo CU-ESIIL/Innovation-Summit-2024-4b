@@ -1,0 +1,8 @@
+imageFileName,gbifIDPlant,speciesPlant,scorePlant,scientificNamePlant,gbifIDBird,decimalLatitude,decimalLongitude,coordinateUncertaintyInMeters,continent,stateProvince,year,month,day,eventDate
+1022800_2838316417_1.jpg,4093688,Catophractes alexandri,17.485999999999997,"Calypte anna (R.Lesson, 1829)",2476674,38.125915,-122.434387,nan,NORTH_AMERICA,United States - California (CA),2010.0,1.0,12.0,2010-01-12
+1024052_2839891443_1.jpg,3129497,Baccharis pilularis,25.172,"Calypte anna (R.Lesson, 1829)",2476674,37.681302,-122.457,nan,NORTH_AMERICA,United States - California (CA),2010.0,1.0,12.0,2010-01-12
+1026162_2839849463_3.jpg,3794637,Euonymus phellomanus,6.413,"Calypte anna (R.Lesson, 1829)",2476674,37.770715,-122.512665,nan,NORTH_AMERICA,United States - California (CA),2010.0,1.0,13.0,2010-01-13
+1026163_2839849463_1.jpg,3794637,Euonymus phellomanus,19.733999999999998,"Calypte anna (R.Lesson, 1829)",2476674,37.770715,-122.512665,nan,NORTH_AMERICA,United States - California (CA),2010.0,1.0,13.0,2010-01-13
+505701_2835402088_1.jpg,2878213,Quercus macrocarpa,19.227,"Calypte anna (R.Lesson, 1829)",2476674,36.793434,-121.018452,nan,NORTH_AMERICA,United States - California (CA),2003.0,4.0,24.0,2003-04-24
+646115_2832104195_1.jpg,2684030,Cupressus sempervirens,7.5249999999999995,"Calypte anna (R.Lesson, 1829)",2476674,36.578041,-121.961975,nan,NORTH_AMERICA,United States - California (CA),2008.0,4.0,4.0,2008-04-04
+646116_2832104195_2.jpg,2684030,Cupressus sempervirens,4.885,"Calypte anna (R.Lesson, 1829)",2476674,36.578041,-121.961975,nan,NORTH_AMERICA,United States - California (CA),2008.0,4.0,4.0,2008-04-04

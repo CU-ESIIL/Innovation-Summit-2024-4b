@@ -1,0 +1,11 @@
+imageFileName,gbifIDPlant,speciesPlant,scorePlant,scientificNameBird,gbifIDBird,decimalLatitude,decimalLongitude,coordinateUncertaintyInMeters,continent,stateProvince,year,month,day,eventDate
+2206258_2832240104_1.jpg,2928783,Nicotiana glauca,76.534,"Calypte anna (R.Lesson, 1829)",2476674,36.438563,-118.905516,10.0,NORTH_AMERICA,United States - California (CA),2007.0,8.0,22.0,2007-08-22
+3632026_2838566912_1.jpg,5384100,Opuntia oricola,32.326,"Calypte anna (R.Lesson, 1829)",2476674,33.69803,-118.037066,100.0,NORTH_AMERICA,United States - California (CA),2012.0,7.0,16.0,2012-07-16
+3632030_2838566912_5.jpg,2928783,Nicotiana glauca,84.845,"Calypte anna (R.Lesson, 1829)",2476674,33.69803,-118.037066,100.0,NORTH_AMERICA,United States - California (CA),2012.0,7.0,16.0,2012-07-16
+3632031_2838566912_2.jpg,2928783,Nicotiana glauca,84.32300000000001,"Calypte anna (R.Lesson, 1829)",2476674,33.69803,-118.037066,100.0,NORTH_AMERICA,United States - California (CA),2012.0,7.0,16.0,2012-07-16
+3799156_2839697081_1.jpg,9520660,Aloe succotrina,6.1530000000000005,"Calypte anna (R.Lesson, 1829)",2476674,37.75245,-122.487869,1000.0,NORTH_AMERICA,United States - California (CA),2012.0,8.0,14.0,2012-08-14
+5312061_2838840965_3.jpg,2926390,Agastache rupestris,83.643,"Calypte anna (R.Lesson, 1829)",2476674,37.87675,-122.462797,100.0,NORTH_AMERICA,United States - California (CA),2013.0,7.0,25.0,2013-07-25
+9707571_2832731761_1.jpg,7298537,Tecoma fulva,21.566,"Calypte anna (R.Lesson, 1829)",2476674,35.156592,-114.571995,25.0,NORTH_AMERICA,United States - Arizona (AZ),2015.0,10.0,6.0,2015-10-06
+9707576_2839316813_1.jpg,7828119,Senegalia erubescens,8.361,"Calypte anna (R.Lesson, 1829)",2476674,32.731664,-117.151731,25.0,NORTH_AMERICA,United States - California (CA),2015.0,10.0,8.0,2015-10-08
+9707582_2839748792_1.jpg,2777724,Aloe vera,69.396,"Calypte anna (R.Lesson, 1829)",2476674,34.943329,-120.436237,25.0,NORTH_AMERICA,United States - California (CA),2015.0,10.0,12.0,2015-10-12
+9707583_2839748792_2.jpg,6411750,Salvia leucantha,99.261,"Calypte anna (R.Lesson, 1829)",2476674,34.943329,-120.436237,25.0,NORTH_AMERICA,United States - California (CA),2015.0,10.0,12.0,2015-10-12
