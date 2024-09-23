@@ -64,8 +64,8 @@ except Exception as e:
     logging.error(f"Error loading segmentation model: {e}")
     raise
 
-# Define a transformation to preprocess the input image
-transform = T.Compose([
+# Define a transformation to preprocess the input image for segmentation
+transform_seg = T.Compose([
     T.ToTensor(),  # Convert image to tensor
     weights.transforms()  # Use the transforms associated with the weights
 ])
@@ -114,7 +114,7 @@ def save_config(config):
 
 
 # Function to validate metadata fields
-def validate_metadata(metadata):
+def validate_metadata(metadata, metadata_file_path):
     required_fields = {
         'scientificName': str,
         'speciesKey': str,
@@ -130,39 +130,64 @@ def validate_metadata(metadata):
     }
 
     errors = []
+    metadata_valid = True
+    # Initialize fields to default values
+    processed_metadata = {
+        'year': np.nan,
+        'month': np.nan,
+        'day': np.nan
+    }
 
     for field, field_type in required_fields.items():
         value = metadata.get(field)
         if value is None:
+            if field in ['year', 'month', 'day']:
+                # These fields can be ignored if invalid
+                continue
             errors.append(f"Missing required metadata field: {field}")
+            metadata_valid = False
             continue
         if value == 'Unknown':
+            if field in ['year', 'month', 'day']:
+                # These fields can be ignored if unknown
+                continue
             errors.append(f"Metadata field '{field}' is 'Unknown'")
+            metadata_valid = False
             continue
         # Type checking and conversion
         try:
             if field_type == float:
-                metadata[field] = float(value)
+                processed_metadata[field] = float(value)
             elif field_type == int:
-                metadata[field] = int(value)
+                processed_metadata[field] = int(value)
             elif field_type == str:
-                metadata[field] = str(value)
+                processed_metadata[field] = str(value)
         except ValueError:
+            if field in ['year', 'month', 'day']:
+                # Ignore invalid year, month, day and rely on eventDate
+                logging.warning(
+                    f"Metadata field '{field}' has invalid type. Expected {field_type.__name__}. Ignoring this field and using 'eventDate'.")
+                continue
             errors.append(f"Metadata field '{field}' has invalid type. Expected {field_type.__name__}.")
+            metadata_valid = False
 
     # Additional validation for latitude and longitude ranges
-    lat = metadata.get('decimalLatitude')
-    lon = metadata.get('decimalLongitude')
+    lat = processed_metadata.get('decimalLatitude')
+    lon = processed_metadata.get('decimalLongitude')
     if isinstance(lat, float):
         if not (-90.0 <= lat <= 90.0):
             errors.append(f"Invalid latitude value: {lat}. Must be between -90 and 90.")
+            metadata_valid = False
     if isinstance(lon, float):
         if not (-180.0 <= lon <= 180.0):
             errors.append(f"Invalid longitude value: {lon}. Must be between -180 and 180.")
+            metadata_valid = False
 
     if errors:
         for error in errors:
             logging.error(error)
+        # Log the full path to the metadata file if validation fails for reasons other than year/month/day
+        logging.error(f"Metadata validation failed for file: {os.path.abspath(metadata_file_path)}")
         return False
     return True
 
@@ -190,7 +215,7 @@ def segment_image(image):
     # Ensure the image is in RGB mode (i.e., it has 3 channels)
     if image.mode != 'RGB':
         image = image.convert('RGB')
-    input_tensor = transform(image).unsqueeze(0).to(device)  # Add batch dimension and move to device
+    input_tensor = transform_seg(image).unsqueeze(0).to(device)  # Add batch dimension and move to device
     logging.info(f"Input tensor is on device: {input_tensor.device}")
     with torch.no_grad():
         try:
@@ -319,7 +344,7 @@ def process_and_identify_images(input_dir, output_dir, results_csv, last_index, 
         metadata = parse_metadata_file(metadata_file)
 
         # Validate metadata
-        if not validate_metadata(metadata):
+        if not validate_metadata(metadata, metadata_file):
             logging.warning(f"Metadata validation failed for {filename}, skipping.")
             continue
 
@@ -331,10 +356,10 @@ def process_and_identify_images(input_dir, output_dir, results_csv, last_index, 
         coordinate_uncertainty = metadata.get('coordinateUncertaintyInMeters', 'Unknown')
         continent = metadata.get('continent', 'Unknown')
         state_province = metadata.get('stateProvince', 'Unknown')
-        year = metadata.get('year', 'Unknown')
-        month = metadata.get('month', 'Unknown')
-        day = metadata.get('day', 'Unknown')
         event_date = metadata.get('eventDate', 'Unknown')
+        year = metadata.get('year', np.nan)
+        month = metadata.get('month', np.nan)
+        day = metadata.get('day', np.nan)
 
         # Load the input image
         try:
@@ -372,16 +397,29 @@ def process_and_identify_images(input_dir, output_dir, results_csv, last_index, 
                 logging.warning(f"Could not make a guess for {filename}, skipping.")
                 continue
 
-        # Inpaint the image to remove the bird (or best guess)
-        try:
-            inpainted_image = cv2.inpaint(image_np, bird_mask, inpaintRadius=3, flags=cv2.INPAINT_TELEA)
-            cv2.imwrite(output_image_path, cv2.cvtColor(inpainted_image, cv2.COLOR_RGB2BGR))
-            logging.info(f"Inpainted image saved to {output_image_path}.")
-        except Exception as e:
-            logging.error(f"Error inpainting image {filename}: {e}")
-            continue
+        # Ensure the mask has the same dimensions as the image
+        if bird_mask.shape != image_np.shape[:2]:
+            logging.warning(
+                f"Mask size {bird_mask.shape} does not match image size {image_np.shape[:2]} for {filename}. Resizing mask.")
+            bird_mask = cv2.resize(bird_mask, (image_np.shape[1], image_np.shape[0]), interpolation=cv2.INTER_NEAREST)
+            logging.info(f"Resized mask to {bird_mask.shape} for {filename}.")
 
-        # Send the inpainted image to Pl@ntNet API for plant identification
+        # Check if the mask has any non-zero pixels
+        if not np.any(bird_mask):
+            logging.info(f"No regions to inpaint in {filename}. Skipping inpainting.")
+            # Optionally, decide how to handle images with no inpaint regions
+            # For this guide, we'll proceed to send to Pl@ntNet API
+        else:
+            # Inpaint the image to remove the bird (or best guess)
+            try:
+                inpainted_image = cv2.inpaint(image_np, bird_mask, inpaintRadius=3, flags=cv2.INPAINT_TELEA)
+                cv2.imwrite(output_image_path, cv2.cvtColor(inpainted_image, cv2.COLOR_RGB2BGR))
+                logging.info(f"Inpainted image saved to {output_image_path}.")
+            except Exception as e:
+                logging.error(f"Error inpainting image {filename}: {e}")
+                continue
+
+        # Send the (inpainted) image to Pl@ntNet API for plant identification
         try:
             with open(output_image_path, 'rb') as image_data:
                 files = [('images', (filename, image_data))]
@@ -438,14 +476,12 @@ def process_and_identify_images(input_dir, output_dir, results_csv, last_index, 
                 'eventDate': event_date
             }
 
-            # Append the result to the CSV immediately
+            # Append the result to the CSV immediately using to_csv with mode='a'
             try:
                 if os.path.exists(results_csv):
-                    results_df = pd.read_csv(results_csv)
-                    results_df = results_df.append(result, ignore_index=True)
+                    pd.DataFrame([result]).to_csv(results_csv, mode='a', header=False, index=False)
                 else:
-                    results_df = pd.DataFrame([result])
-                results_df.to_csv(results_csv, index=False)
+                    pd.DataFrame([result]).to_csv(results_csv, mode='w', header=True, index=False)
                 logging.info(f"Result for '{filename}' appended to {results_csv}.")
                 # Add to processed_images_set to avoid reprocessing
                 processed_images_set.add(filename)
@@ -472,8 +508,12 @@ def load_processed_images(results_csv):
     if os.path.exists(results_csv):
         try:
             existing_df = pd.read_csv(results_csv)
-            processed_images_set = set(existing_df['imageFileName'].tolist())
-            logging.info(f"Loaded {len(processed_images_set)} processed image(s) from {results_csv}.")
+            if 'imageFileName' in existing_df.columns:
+                processed_images_set = set(existing_df['imageFileName'].tolist())
+                logging.info(f"Loaded {len(processed_images_set)} processed image(s) from {results_csv}.")
+            else:
+                logging.warning(
+                    f"'imageFileName' column not found in {results_csv}. Assuming no images have been processed.")
         except Exception as e:
             logging.error(f"Error reading {results_csv}: {e}")
             # If reading fails, assume no images have been processed
