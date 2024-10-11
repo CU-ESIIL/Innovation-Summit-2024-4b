@@ -8,7 +8,7 @@
 
 # User-specific files
 .Ruserdata
-
+/home/exouser/pri/plantnet_api_config.json
 # Example code in package build process
 *-Ex.R
 
