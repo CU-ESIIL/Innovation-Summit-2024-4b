@@ -14,9 +14,6 @@ Group share location on CyVerse: /iplant/home/miguelcleon/group4b
 ### Species interactions under climate change
 How will shifting climate conditions alter species interactions, and what impications will these changes have for ecosystem stability? 
 
-## Documentation
-- Access detailed documentation on our [GitHub Pages site](https://your-gh-pages-url/).
-
 
 ## Group Members
 The Team
